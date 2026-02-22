@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  database:
+    image: postgres:15
+    container_name: postgres-container
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=pg-invest
+      - POSTGRES_PASSWORD=invest-password
+      - POSTGRES_DB=invest
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - invest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pg-invest -d invest"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: 
+        context: ../investir
+        dockerfile: Dockerfile
+    container_name: java-app-container
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/invest
+      - SPRING_DATASOURCE_USERNAME=pg-invest
+      - SPRING_DATASOURCE_PASSWORD=invest-password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+    networks:
+      - invest-network
+
+networks:
+  invest-network:
+    driver: bridge
+
+volumes:
+  pg_data:

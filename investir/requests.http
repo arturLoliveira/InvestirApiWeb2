@@ -1,0 +1,120 @@
+### ============================================================================
+### ⚙️ CONFIGURAÇÕES GLOBAIS
+### ============================================================================
+@baseUrl = http://localhost:8080
+
+# IDs reais capturados dos seus logs de sucesso
+@subscriberUid = d0cf8fa5-840e-46eb-991d-d8137998f4f7
+@adminUid = eafcbb0c-e7e4-41e3-88c0-1344176cee61
+@walletUid = <preencha_aqui_apos_o_post_de_abrir_carteira>
+
+# Credenciais provisionadas pelo SeedDatabaseConfig
+@rootEmail = master@invest.com
+@rootPass = invest_2026_secure
+
+# Credenciais do usuário criado no seu teste
+@clientEmail = investidor@exemplo.com
+@clientPass = senha_segura_123
+
+### ============================================================================
+### 👤 GERENCIAMENTO DE CONTAS (SUBSCRIBERS)
+### ============================================================================
+
+### 1. Criar Novo Assinante (Standard User)
+# Rota pública conforme SecurityServiceGateway
+POST {{baseUrl}}/api/accounts/register
+Content-Type: application/json
+
+{
+  "fullName": "João Investidor",
+  "contactEmail": "investidor@exemplo.com",
+  "secretKey": "senha_segura_123",
+  "accessLevel": "STANDARD_USER"
+}
+
+### 2. Listar Todos os Perfis (Requer ADMIN)
+# Sintaxe 'e-mail:senha' corrige o erro 401
+GET {{baseUrl}}/api/accounts/directory
+Authorization: Basic {{rootEmail}}:{{rootPass}}
+
+### 3. Buscar Perfil Específico
+GET {{baseUrl}}/api/accounts/profile/{{subscriberUid}}
+Authorization: Basic {{clientEmail}}:{{clientPass}}
+
+### ============================================================================
+### 📈 GESTÃO DE ATIVOS FINANCEIROS (HOLDINGS)
+### ============================================================================
+
+### 1. Registrar Aquisição de Ativo
+# Alinhado com o HoldingInputDTO e AssetManagementService
+POST {{baseUrl}}/api/assets/execute
+Authorization: Basic {{clientEmail}}:{{clientPass}}
+Content-Type: application/json
+
+{
+  "assetCategory": "STOCK",
+  "ticker": "VALE3",
+  "volume": 50,
+  "acquisitionCost": 65.50,
+  "entryDate": "2026-02-22"
+}
+
+### 2. Listar Histórico de Ativos
+GET {{baseUrl}}/api/assets/list-all
+Authorization: Basic {{rootEmail}}:{{rootPass}}
+
+### 3. Obter Resumo da Saúde da Carteira (Health Check)
+# Anteriormente bloqueado por Erro 401
+GET {{baseUrl}}/api/assets/health
+Authorization: Basic {{clientEmail}}:{{clientPass}}
+
+### ============================================================================
+### 💼 CARTEIRAS DE INVESTIMENTO (WALLETS)
+### ============================================================================
+
+### 1. Inicializar/Vincular Carteira ao Usuário
+# Vincula a WalletEntity ao SubscriberEntity via ownerId
+POST {{baseUrl}}/api/wallets/open
+Authorization: Basic {{clientEmail}}:{{clientPass}}
+Content-Type: application/json
+
+{
+  "ownerId": "{{subscriberUid}}",
+  "aggregatedValue": 3275.00,
+  "distributionMap": {
+    "STOCK": 3275.00
+  },
+  "totalQuantity": 50,
+  "holdings": [
+    {
+      "assetCategory": "STOCK",
+      "ticker": "VALE3",
+      "volume": 50,
+      "acquisitionCost": 65.50,
+      "entryDate": "2026-02-22"
+    }
+  ]
+}
+
+### 2. Sincronizar Dados da Carteira
+PUT {{baseUrl}}/api/wallets/sync/{{walletUid}}
+Authorization: Basic {{clientEmail}}:{{clientPass}}
+Content-Type: application/json
+
+{
+  "ownerId": "{{subscriberUid}}",
+  "aggregatedValue": 6550.00,
+  "distributionMap": {
+    "STOCK": 6550.00
+  },
+  "totalQuantity": 100,
+  "holdings": [
+    {
+      "assetCategory": "STOCK",
+      "ticker": "VALE3",
+      "volume": 100,
+      "acquisitionCost": 65.50,
+      "entryDate": "2026-02-22"
+    }
+  ]
+}
