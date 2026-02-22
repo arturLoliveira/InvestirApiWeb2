@@ -1,109 +1,36 @@
-# 📊 InvestAPI: API de Gerenciamento de Carteira de Investimentos
+📊 AssetGuard Engine
+AssetGuard é uma API RESTful de alta performance desenvolvida com Spring Boot 3 para a gestão centralizada de ativos multimercado e monitoramento de custódia financeira.
 
-A proposta desse projeto é o desenvolvimento de uma API RESTful com Spring Boot que permita aos usuários cadastrarem ativos que possuem, atualizarem informações, acompanharem saldos e obterem um resumo de suas carteiras de investimentos. 
+🚀 Setup & Execução
+A infraestrutura é totalmente orquestrada via Docker, garantindo paridade entre ambientes.
 
-![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) 
+Provisionamento: Navegue até a pasta docker/ e execute:
 
+Bash
+docker compose -f docker-compose-dev.yml up --build
+Bootstrap: O sistema realiza o auto-seed de uma conta administrativa no primeiro boot.
 
-## ⚙️ Inicialização
+Verificação: O sistema está pronto quando o log exibir: Conta administrativa provisionada com sucesso: master@invest.com.
 
-Para inicializar a aplicação, caminhe até a pasta `docker` no terminal a partir da raíz do repositório (`cd docker`), e rode o comando `docker compose -f docker-compose-dev.yml up --build`. Certifique-se que o Docker Desktop está em funcionamento. Assim que a aplicação estiver em funcionamento, é possível testar as rotas no arquivo em `resquests.http` na pasta `/invest`.
+📎 Arquitetura de Endpoints
+1. Governança de Contas (Subscribers)
+POST /api/accounts/register - Registro de novo assinante.
 
-## 📎Funcionalidades
+GET /api/accounts/directory - Listagem global de perfis (Admin Only).
 
-### 1. Serviço de Investimentos
+2. Gestão de Ativos (Holdings)
+POST /api/assets/execute - Registro de nova aquisição de ativo.
 
-A entidade de investimentos é usada para representar uma ação cadastrada por um usuário.
+GET /api/assets/health - Snapshot da saúde financeira da carteira.
 
-* Cadastrar um novo ativo na carteira
-    - Endpoint: `POST /investments`
+3. Consolidação de Custódia (Wallets)
+POST /api/wallets/open - Inicialização e vínculo de carteira ao titular.
 
-Payload:
-```json
-{
-  "type": "ACAO",
-  "symbol": "VALE3",
-  "quantity": 50,
-  "purchasePrice": 65.50,
-  "purchaseDate": "2025-08-15"
-}
-```
+PUT /api/wallets/sync/{uid} - Sincronização de dados agregados.
 
-* Listar todos os ativos da carteira
-    - Endpoint: `GET /investments`
-* Obter um ativo específico
-    - Endpoint: `GET /investments/{id}`
-* Filtrar ativos por tipo
-    - Endpoint: `GET /investments?type=ACAO`
-* Atualizar um ativo
-    - Endpoint: `PUT /investments/{id}`
-* Remover um ativo da carteira
-    - Endpoint: `DELETE /investments/{id}`
-* Resumo da carteira
-    - Endpoint: `GET /investments/summary`
+🔐 Segurança
+O acesso aos recursos é protegido por HTTP Basic Auth. As credenciais mestre provisionadas são:
 
-### 2. Serviço de Usuários
-A entidade de usuário é usada para representar o usuário que acessa o sistema. Além disso, ela é usada para atribuir um portfólio específico à um usuário.
+User: master@invest.com
 
-* Criar um usuário
-    - Endpoint: `POST /users`
-
-Payload:
-```json
-{
-  "name": "John Doe",
-  "email": "john.doe@example.com",
-  "password": "123456",
-  "role": "USER"
-}
-
-```
-
-* Listar todos os usuários
-    - Endpoint: `GET /users/all`
-* Obter um usuário por id
-    - Endpoint: `GET /users/{id}`
-* Atualizar um usuário
-    - Endpoint: `PUT /users/{id}`
-* Deletar um usuário
-    - Endpoint: `DELETE /users/{id}`
-
-### 3. Serviço de Portfólios
-
-A entidade de portfólio é usada para armazenar todos os investimentos cadastrados por um usuário, além de guardar cálculos referentes à eles.
-
-* Criar um portfólio
-    - Endpoint: `POST /porfolios`
-
-Payload:
-```json
-{
-  "userId": "{{userId}}",
-  "totalInvested": 600.00,
-  "totalByType": {
-    "ACAO": 600.00
-  },
-  "assetCount": 1,
-  "investments": [
-    {
-      "type": "ACAO",
-      "symbol": "VALE3",
-      "quantity": 100,
-      "purchasePrice": 60.00,
-      "purchaseDate": "2025-08-15"
-    }
-  ]
-}
-
-```
-
-* Listar todos os portfólios
-    - Endpoint: `GET /portfolios/all`
-* Obter um portfólio por id
-    - Endpoint: `GET /portfolios/{id}`
-* Obter um portfólio pelo id do usuário
-    - Endpoint: `GET /porfolios/user/{userId}`
-* Atualizar um portfólio
-    - Endpoint: `PUT /porfolios/{id}`
-* Deletar um portfólio
-    - Endpoint: `DELETE /porfolios/{id}`
+Pass: invest_2026_secure
